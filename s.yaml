@@ -1,0 +1,71 @@
+# 阿里云Serverless Framework配置文件
+# 文档: https://help.aliyun.com/zh/fc/
+
+edition: 3.0
+name: campus-ai-study-assistant
+access: default  # 替换为你的密钥别名
+
+vars:
+  region: cn-hangzhou
+  serviceName: campus-ai-study
+
+services:
+  # ============ 后端API服务 ============
+  backend:
+    component: fc3
+    inputs:
+      region: ${vars.region}
+      serviceName: ${vars.serviceName}
+      description: 校园AI学习助手后端服务
+      internetAccess: true
+      vpcConfig:  # 如需连接VPC取消注释
+        # vpcId: your-vpc-id
+        # vswitchIds:
+        #   - your-vswitch-id
+      
+      # 函数配置
+      function:
+        functionName: study-assistant-api
+        description: AI资料整理API
+        runtime: python3.10
+        code: ./backend
+        handler: index.handler
+        timeout: 60
+        memorySize: 512
+        environmentVariables:
+          ZHIPU_API_KEY: ${env.ZHIPU_API_KEY}
+          PYTHONIOENCODING: utf-8
+        
+        # 定时触发器（可选）
+        # triggers:
+        #   - name: timer
+        #     type: timer
+        #     config: "0 0 2 * * *"
+      
+      # 权限配置
+      # role: acs:ram::your-account-id:role/aliyunfcdefaultrole
+      
+      # 日志配置
+      # logConfig:
+      #   project: your-log-project
+      #   logstore: your-log-store
+
+  # ============ 前端静态网站 ============
+  frontend:
+    component: static-website
+    inputs:
+      region: ${vars.region}
+      bucketName: campus-ai-study-frontend
+      buildCommand: npm install && npm run build
+      distDir: ./frontend/dist
+      indexDocument: index.html
+      errorDocument: index.html
+      
+      # 自定义域名（可选）
+      # customDomains:
+      #   - domainName: study.yourdomain.com
+      #     protocol: HTTPS
+      #     certId: your-cert-id
+      #     routes:
+      #       - path: /*
+      #         backend: static-website

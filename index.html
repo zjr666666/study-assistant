@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园AI学习助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6fd6;
+            --secondary: #764ba2;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1a202c;
+            --text-light: #718096;
+            --border: #e2e8f0;
+            --success: #48bb78;
+            --warning: #ed8936;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        /* 头部导航 */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* 标签切换 */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--card);
+            padding: 0.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .tab:hover:not(.active) {
+            background: var(--bg);
+        }
+        
+        /* 卡片 */
+        .card {
+            background: var(--card);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+        
+        /* AI资料整理 */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 1rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .text-input {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* 按钮 */
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* API Key 设置 */
+        .api-settings {
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .api-settings h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .api-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+        }
+        
+        .api-status {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .api-status.connected {
+            color: var(--success);
+        }
+        
+        .api-status.disconnected {
+            color: var(--warning);
+        }
+        
+        /* 结果展示 */
+        .results {
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .result-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .result-content {
+            background: var(--bg);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .keyword {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.375rem 0.875rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+        }
+        
+        /* 思维导图 */
+        .mindmap {
+            background: var(--bg);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+        
+        .mindmap-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .mindmap-root {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .mindmap-branches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            justify-content: center;
+        }
+        
+        .mindmap-branch {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        
+        /* 专注计时 */
+        .timer-display {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .timer-time {
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .timer-label {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .btn-timer {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, var(--success), #38a169);
+            color: white;
+        }
+        
+        .btn-pause {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: var(--border);
+            color: var(--text-light);
+        }
+        
+        .btn-timer:hover {
+            transform: scale(1.1);
+        }
+        
+        /* 统计数据 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 专注提醒 */
+        .focus-tip {
+            background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(56, 161, 105, 0.1));
+            border-left: 4px solid var(--success);
+            padding: 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .focus-tip.show {
+            display: block;
+        }
+        
+        /* 历史记录 */
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-date {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .history-duration {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .timer-time {
+                font-size: 3.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* Toast通知 */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>📚 校园AI学习助手</h1>
+    </header>
+    
+    <main class="container">
+        <!-- 标签切换 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="analyze">📖 AI资料整理</button>
+            <button class="tab" data-tab="focus">⏱️ 专注计时</button>
+        </div>
+        
+        <!-- AI资料整理 -->
+        <section id="analyze-section">
+            <div class="card">
+                <h2 class="card-title">📖 AI资料整理</h2>
+                
+                <!-- API Key设置 -->
+                <div class="api-settings">
+                    <h4>🔑 智谱AI API Key</h4>
+                    <input type="password" id="apiKey" class="api-input" placeholder="输入你的智谱API Key（可选，不输入则使用模拟数据）">
+                    <div class="api-status disconnected" id="apiStatus">⚠️ 未配置API Key，将使用模拟数据</div>
+                </div>
+                
+                <!-- 上传区域 -->
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">拖拽文件到此处，或点击选择</div>
+                    <div class="upload-text" style="font-size: 0.85rem;">支持 PDF、图片(OCR识别)、TXT 文档</div>
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf,.jpg,.jpeg,.png,.txt,.md">
+                </div>
+                
+                <!-- 文本输入 -->
+                <textarea id="textInput" class="text-input" placeholder="或者直接在这里粘贴文本内容..."></textarea>
+                
+                <button class="btn btn-primary" id="analyzeBtn">🚀 开始AI分析</button>
+                
+                <!-- 加载中 -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <div>AI正在分析中，请稍候...</div>
+                </div>
+            </div>
+            
+            <!-- 结果展示 -->
+            <div class="card results" id="results">
+                <h2 class="card-title">📊 分析结果</h2>
+                
+                <div class="result-section">
+                    <div class="result-label">📝 提取文本</div>
+                    <div class="result-content" id="resultText"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">🏷️ 关键词</div>
+                    <div class="keywords" id="resultKeywords"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">📋 摘要</div>
+                    <div class="result-content" id="resultSummary"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">📚 背诵提纲</div>
+                    <div class="result-content" id="resultOutline"></div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">🧠 思维导图</div>
+                    <div class="mindmap">
+                        <div class="mindmap-node">
+                            <div class="mindmap-root" id="mindmapRoot"></div>
+                            <div class="mindmap-branches" id="mindmapBranches"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 专注计时 -->
+        <section id="focus-section" style="display: none;">
+            <div class="card">
+                <h2 class="card-title">⏱️ 专注计时</h2>
+                
+                <div class="timer-display">
+                    <div class="timer-time" id="timerDisplay">00:00:00</div>
+                    <div class="timer-label" id="timerLabel">准备开始专注</div>
+                </div>
+                
+                <div class="timer-controls">
+                    <button class="btn-timer btn-start" id="startBtn">▶</button>
+                    <button class="btn-timer btn-pause" id="pauseBtn" style="display: none;">⏸</button>
+                    <button class="btn-timer btn-reset" id="resetBtn">↺</button>
+                </div>
+                
+                <div class="focus-tip" id="focusTip">
+                    🎉 恭喜！你已完成 <span id="focusMinutes">0</span> 分钟的专注学习！
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="todayTotal">0</div>
+                        <div class="stat-label">今日专注(分钟)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="todayCount">0</div>
+                        <div class="stat-label">今日次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTotal">0</div>
+                        <div class="stat-label">总专注(分钟)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCount">0</div>
+                        <div class="stat-label">总次数</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title">📜 专注记录</h2>
+                <div class="history-list" id="historyList">
+                    <div style="text-align: center; color: var(--text-light); padding: 2rem;">
+                        暂无记录，开始你的第一次专注吧！
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Toast通知 -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // ============ 全局变量 ============
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let isRunning = false;
+        let focusRecords = JSON.parse(localStorage.getItem('focusRecords') || '[]');
+        let apiKey = localStorage.getItem('zhipuApiKey') || '';
+        
+        // ============ 初始化 ============
+        document.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            initFileUpload();
+            initTimer();
+            initAPIKey();
+            updateStats();
+            loadHistory();
+            
+            // 检查API Key状态
+            if (apiKey) {
+                document.getElementById('apiKey').value = apiKey;
+                updateAPIStatus(true);
+            }
+        });
+        
+        // ============ 标签切换 ============
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabName = tab.dataset.tab;
+                    document.getElementById('analyze-section').style.display = tabName === 'analyze' ? 'block' : 'none';
+                    document.getElementById('focus-section').style.display = tabName === 'focus' ? 'block' : 'none';
+                });
+            });
+        }
+        
+        // ============ 文件上传 ============
+        function initFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = 'var(--primary)';
+                uploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.borderColor = '';
+                uploadArea.style.background = '';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '';
+                uploadArea.style.background = '';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    handleFile(fileInput.files[0]);
+                }
+            });
+            
+            analyzeBtn.addEventListener('click', analyzeContent);
+        }
+        
+        function handleFile(file) {
+            const textInput = document.getElementById('textInput');
+            
+            if (file.type.startsWith('text/') || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    textInput.value = e.target.result;
+                    showToast('文件已加载: ' + file.name);
+                };
+                reader.readAsText(file);
+            } else if (file.type.startsWith('image/')) {
+                // 图片文件 - 显示提示
+                textInput.placeholder = '图片已选择，将使用模拟OCR结果。完整OCR需要后端支持。';
+                showToast('已选择图片: ' + file.name + ' (OCR功能需要配置API)');
+            } else {
+                showToast('暂不支持此文件格式，请使用TXT或MD文件');
+            }
+        }
+        
+        // ============ AI分析 ============
+        async function analyzeContent() {
+            const textInput = document.getElementById('textInput');
+            const content = textInput.value.trim();
+            
+            if (!content) {
+                showToast('请输入或上传内容');
+                return;
+            }
+            
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            loading.classList.add('show');
+            results.classList.remove('show');
+            analyzeBtn.disabled = true;
+            
+            try {
+                let result;
+                
+                if (apiKey) {
+                    result = await callZhipuAPI(content);
+                } else {
+                    result = getMockResult(content);
+                }
+                
+                displayResults(result);
+                results.classList.add('show');
+                showToast('分析完成！');
+            } catch (error) {
+                console.error('分析失败:', error);
+                showToast('分析失败，使用模拟数据');
+                displayResults(getMockResult(content));
+                results.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+                analyzeBtn.disabled = false;
+            }
+        }
+        
+        async function callZhipuAPI(content) {
+            const prompt = `分析以下学习资料：
+${content.slice(0, 2000)}
+
+请以JSON格式返回分析结果：
+{"text": "提取文本", "keywords": ["关键词1", "关键词2", "关键词3", "关键词4", "关键词5"], "summary": "摘要内容", "outline": "# 背诵提纲\\n\\n## 一、核心概念\\n- 要点1\\n- 要点2\\n\\n## 二、重点内容\\n- 内容1\\n- 内容2", "mindmap": {"root": "主题", "branches": ["分支1", "分支2", "分支3", "分支4"]}}`;
+
+            const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'glm-4-flash',
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('API调用失败');
+            }
+            
+            const data = await response.json();
+            const contentText = data.choices[0].message.content;
+            
+            // 尝试解析JSON
+            try {
+                return JSON.parse(contentText);
+            } catch {
+                return getMockResult(content);
+            }
+        }
+        
+        function getMockResult(content) {
+            return {
+                text: content.slice(0, 1000) || '[请输入文本内容]',
+                keywords: ['人工智能', '机器学习', '数据分析', '深度学习', '神经网络'],
+                summary: '这是学习资料的摘要总结。配置智谱API Key后可获得更准确的分析结果。',
+                outline: '# 背诵提纲\n\n## 一、核心概念\n- 概念一\n- 概念二\n\n## 二、重点内容\n- 重点一\n- 重点二\n\n## 三、实践应用\n- 应用一\n- 应用二',
+                mindmap: {
+                    root: '学习资料主题',
+                    branches: ['核心概念', '重点分析', '实践应用', '总结思考']
+                }
+            };
+        }
+        
+        function displayResults(result) {
+            document.getElementById('resultText').textContent = result.text || '';
+            
+            const keywordsEl = document.getElementById('resultKeywords');
+            keywordsEl.innerHTML = (result.keywords || []).map(k => `<span class="keyword">${k}</span>`).join('');
+            
+            document.getElementById('resultSummary').textContent = result.summary || '';
+            document.getElementById('resultOutline').textContent = result.outline || '';
+            
+            const mindmap = result.mindmap || { root: '主题', branches: [] };
+            document.getElementById('mindmapRoot').textContent = mindmap.root || '主题';
+            document.getElementById('mindmapBranches').innerHTML = (mindmap.branches || []).map(b => `<span class="mindmap-branch">${b}</span>`).join('');
+        }
+        
+        // ============ API Key设置 ============
+        function initAPIKey() {
+            const apiKeyInput = document.getElementById('apiKey');
+            
+            apiKeyInput.addEventListener('input', () => {
+                apiKey = apiKeyInput.value.trim();
+                localStorage.setItem('zhipuApiKey', apiKey);
+                updateAPIStatus(!!apiKey);
+            });
+        }
+        
+        function updateAPIStatus(configured) {
+            const status = document.getElementById('apiStatus');
+            if (configured) {
+                status.textContent = '✅ API Key已配置，AI功能可用';
+                status.className = 'api-status connected';
+            } else {
+                status.textContent = '⚠️ 未配置API Key，将使用模拟数据';
+                status.className = 'api-status disconnected';
+            }
+        }
+        
+        // ============ 专注计时 ============
+        function initTimer() {
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', pauseTimer);
+            resetBtn.addEventListener('click', resetTimer);
+        }
+        
+        function startTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'flex';
+            document.getElementById('timerLabel').textContent = '专注中...保持专注！';
+            
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                updateTimerDisplay();
+                
+                // 每25分钟提醒喝水
+                if (elapsedSeconds % 1500 === 0 && elapsedSeconds > 0) {
+                    showToast('💧 休息一下，喝杯水吧！');
+                }
+                
+                // 每45分钟提醒休息
+                if (elapsedSeconds % 2700 === 0 && elapsedSeconds > 0) {
+                    showToast('👀 休息眼睛，远眺一下！');
+                }
+            }, 1000);
+        }
+        
+        function pauseTimer() {
+            if (!isRunning) return;
+            
+            isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('startBtn').style.display = 'flex';
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('timerLabel').textContent = '已暂停';
+            
+            // 保存记录
+            if (elapsedSeconds >= 60) {
+                saveRecord();
+            }
+        }
+        
+        function resetTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            elapsedSeconds = 0;
+            updateTimerDisplay();
+            document.getElementById('startBtn').style.display = 'flex';
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('timerLabel').textContent = '准备开始专注';
+            
+            // 保存记录
+            if (elapsedSeconds >= 60) {
+                saveRecord();
+            }
+        }
+        
+        function updateTimerDisplay() {
+            const hours = Math.floor(elapsedSeconds / 3600);
+            const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+            const seconds = elapsedSeconds % 60;
+            
+            document.getElementById('timerDisplay').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function saveRecord() {
+            const minutes = Math.floor(elapsedSeconds / 60);
+            const now = new Date();
+            const record = {
+                duration: minutes,
+                date: now.toLocaleDateString('zh-CN'),
+                timestamp: now.toISOString()
+            };
+            
+            focusRecords.unshift(record);
+            if (focusRecords.length > 100) {
+                focusRecords = focusRecords.slice(0, 100);
+            }
+            
+            localStorage.setItem('focusRecords', JSON.stringify(focusRecords));
+            updateStats();
+            loadHistory();
+            
+            // 显示完成提示
+            document.getElementById('focusMinutes').textContent = minutes;
+            document.getElementById('focusTip').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('focusTip').classList.remove('show');
+            }, 5000);
+        }
+        
+        function updateStats() {
+            const today = new Date().toLocaleDateString('zh-CN');
+            const todayRecords = focusRecords.filter(r => r.date === today);
+            
+            const todayTotal = todayRecords.reduce((sum, r) => sum + r.duration, 0);
+            const todayCount = todayRecords.length;
+            const totalTotal = focusRecords.reduce((sum, r) => sum + r.duration, 0);
+            const totalCount = focusRecords.length;
+            
+            document.getElementById('todayTotal').textContent = todayTotal;
+            document.getElementById('todayCount').textContent = todayCount;
+            document.getElementById('totalTotal').textContent = totalTotal;
+            document.getElementById('totalCount').textContent = totalCount;
+        }
+        
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            
+            if (focusRecords.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: var(--text-light); padding: 2rem;">暂无记录，开始你的第一次专注吧！</div>';
+                return;
+            }
+            
+            list.innerHTML = focusRecords.slice(0, 20).map(record => `
+                <div class="history-item">
+                    <div>
+                        <div>${record.date}</div>
+                        <div class="history-date">${new Date(record.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                    <div class="history-duration">${record.duration} 分钟</div>
+                </div>
+            `).join('');
+        }
+        
+        // ============ 工具函数 ============
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

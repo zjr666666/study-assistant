@@ -1,0 +1,29 @@
+# 校园AI学习助手 - Python依赖
+# 安装命令: pip install -r requirements.txt
+
+# Web框架
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+starlette==0.35.1
+
+# 数据处理
+pydantic==2.5.3
+
+# HTTP请求
+httpx==0.26.0
+requests==2.31.0
+
+# PDF处理
+pypdf==4.0.1
+
+# 图片处理
+Pillow==10.2.0
+
+# CORS支持
+python-multipart==0.0.6
+
+# 环境变量
+python-dotenv==1.0.0
+
+# 类型提示
+typing-extensions==4.9.0
