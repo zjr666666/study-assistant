@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专注时长统计 - 校园AI学习助手</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- ==================== 头部 ==================== -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">📚</span>
+                <span>校园AI学习助手</span>
+            </div>
+            <h1 class="page-title">🎯 专注时长统计</h1>
+            <p class="page-subtitle">保持专注，高效学习</p>
+        </header>
+
+        <!-- ==================== 计时器卡片 ==================== -->
+        <div class="timer-card">
+            <!-- 状态标签 -->
+            <div class="status-badge idle" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">等待开始</span>
+            </div>
+            
+            <!-- 计时器显示 -->
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-label">专注时长</div>
+            
+            <!-- 目标时长选择 -->
+            <div class="goal-selector">
+                <button class="goal-btn" data-goal="15">15分钟</button>
+                <button class="goal-btn" data-goal="25">25分钟</button>
+                <button class="goal-btn" data-goal="45">45分钟</button>
+                <button class="goal-btn" data-goal="60">1小时</button>
+            </div>
+            
+            <!-- 开始/结束按钮 -->
+            <button class="control-btn start" id="controlBtn">
+                <span>▶</span> 开始专注
+            </button>
+        </div>
+
+        <!-- ==================== 统计卡片 ==================== -->
+        <div class="stats-card">
+            <div class="stats-header">
+                <span class="stats-title">📊 专注统计</span>
+                <span class="stats-period">今日</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="todayTime">0分钟</div>
+                    <div class="stat-label">今日专注</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value accent" id="weekTime">0分钟</div>
+                    <div class="stat-label">本周累计</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value warning" id="sessionCount">0</div>
+                    <div class="stat-label">专注次数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 本周趋势 ==================== -->
+        <div class="stats-card">
+            <div class="stats-header">
+                <span class="stats-title">📈 本周趋势</span>
+            </div>
+            <div class="week-chart" id="weekChart">
+                <!-- 柱状图由JS生成 -->
+            </div>
+            <div class="chart-labels" id="chartLabels">
+                <!-- 标签由JS生成 -->
+            </div>
+        </div>
+
+        <!-- ==================== 历史记录 ==================== -->
+        <div class="history-section">
+            <div class="history-header">
+                <span class="history-title">📋 最近记录</span>
+                <button class="clear-btn" id="clearBtn">清除记录</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- 历史记录由JS生成 -->
+            </div>
+        </div>
+
+        <!-- ==================== 页脚 ==================== -->
+        <footer class="footer">
+            <p>💡 快捷键：空格键 开始/结束专注</p>
+        </footer>
+
+    </div>
+
+    <!-- ==================== 专注模式警告弹窗 ==================== -->
+    <div class="focus-warning" id="focusWarning">
+        <div class="warning-icon">😮</div>
+        <div class="warning-title">检测到分心行为</div>
+        <div class="warning-text">
+            你已离开本页面 <span id="warningCount">1</span> 次<br>
+            保持专注才能更高效哦！
+        </div>
+        <button class="warning-btn" id="continueBtn">继续专注 💪</button>
+        <button class="warning-btn" id="giveUpBtn" style="background: transparent; color: rgba(255,255,255,0.6); margin-top: 12px;">结束专注</button>
+    </div>
+
+    <!-- ==================== Toast 提示 ==================== -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span class="toast-message" id="toastMessage">操作成功</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
