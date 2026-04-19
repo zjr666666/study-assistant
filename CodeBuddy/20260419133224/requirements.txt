@@ -1,0 +1,15 @@
+# Python 依赖包
+# 安装命令: pip install -r requirements.txt
+
+# Web框架
+flask>=2.3.0
+flask-cors>=4.0.0
+
+# HTTP请求
+requests>=2.31.0
+
+# 图片处理
+pillow>=10.0.0
+
+# PDF解析
+pypdf>=3.17.0
